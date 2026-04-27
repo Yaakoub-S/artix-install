@@ -18,6 +18,5 @@ read -p "Do you want to wipe '$drive'? [y/N] " res
 [[ $res != 'y' ]] && exit 1
 
 # 3. Partitioning
-wipefs -afq "$drive" || error_out "wiping fs signatures failed."
-echo -e "label: gpt\n,1G,U\n," | sfdisk "$drive"
+echo -e "label: gpt\n,1G,U\n," | sfdisk -fq --wipe always --wipe-partitions always "$drive" >/dev/null 2>&1
 (($? != 0)) && error_out "failed creating the necessary partitions."
