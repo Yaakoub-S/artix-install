@@ -16,7 +16,7 @@ ROOT_MNTDIR=/mnt
 drive=$1
 name=${1##*/}
 
-[[ -z "$drive" || ! -e "/sys/block/$drive" ]] && error_out "'$1' is not a valid drive."
+[[ -z "$drive" || ! -e "/sys/block/$name" ]] && error_out "'$1' is not a valid drive."
 
 # 2. Asking permission before nuking everything
 read -p "Do you want to wipe '$drive'? [y/N] " res
