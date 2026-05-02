@@ -1,11 +1,17 @@
 #!/bin/env bash
 
 error_msg() {
-  printf '[ERROR] %s' "$1"
+  printf '[ERROR] %s\n' "$1" >&2
 }
 
 error_out() {
   error_msg "$1"
+  exit 1
+}
+
+usage_error() {
+  error_msg "$1"
+  usage
   exit 1
 }
 
