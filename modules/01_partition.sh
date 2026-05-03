@@ -23,7 +23,7 @@ if [[ -b "/dev/mapper/cryptroot" ]]; then
 fi
 
 read -p "Do you want to wipe '$drive'? [y/N] " res
-[[ $res == [yY]* ]] && exit 1
+[[ $res == [yY]* ]] || exit 1
 
 # Partitioning
 echo -e "label: gpt\n,1G,U\n," | sfdisk -fq --wipe always --wipe-partitions always "$drive" || error_out "failed creating the necessary partitions."
