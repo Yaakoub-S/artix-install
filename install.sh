@@ -32,3 +32,4 @@ done
 
 # Calling modules
 $SCRIPT_DIR/modules/01_partition.sh "$drive" || exit 1
+$SCRIPT_DIR/modules/02_format.sh "$drive" || exit 1

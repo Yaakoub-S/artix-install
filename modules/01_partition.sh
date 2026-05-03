@@ -1,6 +1,9 @@
 #!/bin/env bash
 
-[[ -z $LIB_PATH ]] && error_out "this module must be run by install.sh"
+if [[ -z $LIB_PATH ]]; then
+  printf "[ERROR] this module must be run by install.sh.\n"
+  exit 1
+fi
 . "$LIB_PATH"
 
 drive=$1
