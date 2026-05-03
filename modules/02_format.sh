@@ -47,6 +47,6 @@ for i in "${!subvols[@]}"; do
 done
 
 # Format the efi partition
-mkdir -p "$EFI_MNTDIR"
+mkdir -p "$EFI_MNTP"
 mkfs.fat -F 32 "$efi_part"
-mount "$efi_part" "$EFI_MNTDIR"
+mount "$efi_part" "$EFI_MNTP"
