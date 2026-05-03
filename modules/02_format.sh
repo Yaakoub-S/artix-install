@@ -22,7 +22,7 @@ root_part="${partitions[1]}"
 
 # Format root partition
 cryptsetup luksFormat "$root_part" || error_out "cryptsetup failed."
-cryptsetup luksOpen "$root_part" cryproot || error_out "failed opening root partition."
+cryptsetup luksOpen "$root_part" cryptroot || error_out "failed opening root partition."
 mkfs.btrfs "$MAPPER_DEV" || error_out "failed creating the btrfs filesystem."
 mount "$MAPPER_DEV" "$MNTP" || error_out "failed mounting mapper partition."
 
