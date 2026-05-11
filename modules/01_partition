@@ -1,5 +1,3 @@
-#!/bin/bash
-
 check_device() {
   local name="${DEVICE##*/}"
 
@@ -8,10 +6,6 @@ check_device() {
   [[ ! -b $DEVICE ]] && die 'Invalid block device.'
   [[ -f "sys/class/block/$name/partition" ]] && \ 
   die 'You provided a partition. This tool can install only to full disks.'
-
-  if grep -q "$name" /proc/cmdline || grep -q "$DEVICE" /proc/mounts; then
-    die 'Please provide a device that is not mounted.'
-  fi
 
   ok 'Device is valid.'
 }
