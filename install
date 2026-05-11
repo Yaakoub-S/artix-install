@@ -47,7 +47,7 @@ main() {
   done
 
   check_device
-  confirm_device
+  confirm_wipe
   $SCRIPT_DIR/bin/spinner prepare_device
   $SCRIPT_DIR/bin/spinner partition_device || die 'Partitionning failed.'
   $SCRIPT_DIR/bin/spinner format_root || die 'Formatting root partition failed.'
