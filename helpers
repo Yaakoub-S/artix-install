@@ -42,12 +42,13 @@ spinner() {
   ) &
   local pid=$!
 
+  trap "kill $pid 2>/dev/null; printf '\r\033[K'" EXIT INT TERM
   "$@"
   local exit_code=$?
-
   kill "$pid" 2>/dev/null
   wait "$pid" 2>/dev/null
   printf "\r\033[K"
+  trap - EXIT INT TERM
 
   return $exit_code
 }

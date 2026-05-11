@@ -12,40 +12,43 @@ check_device() {
 }
 
 confirm_wipe() {
-  printf "\e[1;31m[ ? ]\e[0m\e[1m"
-  printf "ARE YOU SURE YOU WANT TO PERMANENTLY ERASE ALL DATA ON $DEVICE?"
+  $NO_CONFIRM && return  
+  printf "\e[1;31m[ ? ]\e[0m\e[1m "
+  printf "ARE YOU SURE YOU WANT TO PERMANENTLY ERASE ALL DATA ON $DEVICE?\n"
   printf "\e[0m"
 
   read -rp "Type 'YES' to confirm: " confirm
-
+   
   [[ $confirm != 'YES' ]] && die 'Device wipe aborted.'
+
+  printf "\033[2A\033[J"
 }
 
 prepare_device() {
   info 'Wiping partitions.'
 
-  swapoff -a 2>/dev/null
-  umount -lR "$MNTP" 2>/dev/null
-  cryptsetup close cryptroot 2>/dev/null
-  wipefs -a "$DEVICE" 2>/dev/null
+  swapoff -a &>/dev/null
+  umount -lR "$MNTP" &>/dev/null
+  cryptsetup close cryptroot &>/dev/null
+  wipefs -a "$DEVICE" &>/dev/null
 
-  dd if=/dev/zero of="$DEVICE" bs=1M count=10 status=none
-  dd if=/dev/zero of="$DEVICE" bs=512 seek=$(($(blockdev --getsz "$DEVICE") - 2048)) status=none
+  dd if=/dev/zero of="$DEVICE" bs=1M count=10 status=none &>/dev/null
+  dd if=/dev/zero of="$DEVICE" bs=512 seek=$(($(blockdev --getsz "$DEVICE") - 2048)) status=none &>/dev/null
 
-  partprobe "$DEVICE" 2>/dev/null
-  udevadm settle 2>/dev/null
+  partprobe "$DEVICE" &>/dev/null
+  udevadm settle &>/dev/null
 
   ok "$DEVICE partitions wiped."
 }
 
 partition_device() {
-  info "Partitionning $DEVICE"
+  info "Partitionning $DEVICE."
 
   echo -e "label: gpt\n,1G,U\n," |
-    sfdisk -fq --wipe always --wipe-partitions always "$DEVICE" &>/dev/null
+    sfdisk -fq "$DEVICE" &>/dev/null
 
   if (($? == 0)); then
-    ok 'Done.'
+    ok "$DEVICE is partitionned."
     return 0
   else
     return 1

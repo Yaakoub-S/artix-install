@@ -7,38 +7,36 @@ get_passphrase() {
   local first_attempt=true
 
   while true; do
-    if ! first_attempt; then
+    if ! $first_attempt; then
       printf '\033[A\033[K\033[A\033[K\033[A\033[K'
     fi
 
-    read -rs -p '[?] Enter LUKS passphrase: ' pass1
+    read -rs -p '[ ? ] Enter LUKS passphrase: ' pass1
     echo
-    read -rs -p '[?] Confirm passphrase: ' pass2
+    read -rs -p '[ ? ] Confirm passphrase: ' pass2
     echo
 
-    first_attempt && first_attempt=false
+    $first_attempt && first_attempt=false
 
     [[ -z $pass1 || ${#pass1} -gt 512 || $pass1 != $pass2 ]] && continue
 
     PASSPHRASE="$pass1"
+    printf "\033[2A\033[J"
     break
   done
 }
 
 format_root() {
   local root_part="${PARTITIONS[1]}"
-  PASSPHRASE="$(get_passphrase)"
 
   (
     set -e
 
     info "Encrypting $root_part."
     printf %s "$PASSPHRASE" | cryptsetup luksFormat "$root_part" --key-file - &>/dev/null
-    ok "$root_part is encrypted."
 
-    info "Opening $root_part"
     printf %s "$PASSPHRASE" | cryptsetup luksOpen "$root_part" cryptroot --key-file - &>/dev/null
-    ok "$root_part is opened."
+    ok "$root_part is encrypted."
 
     info "Formatting $MAPPER_DEV"
     mkfs.btrfs -fq "$MAPPER_DEV" &>/dev/null
@@ -47,7 +45,7 @@ format_root() {
   )
 }
 
-subvolume_creation() {
+create_subvolumes() {
   local subvols=(@ @home @log @pkg @.snapshots @.swap)
   local targets=('' /home /var/log /var/cache/pacman/pkg /.snapshots /.swap)
   local i subvol target opts

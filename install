@@ -9,6 +9,7 @@ EFI_MNTP=/mnt/efi
 SWAP_FILE_SIZE=4096
 SWAP_PATH=/mnt/swap/swapfile
 PASSPHRASE=
+PARTITIONS=
 
 [[ -f $SCRIPT_DIR/helpers ]] && . "$SCRIPT_DIR/helpers"
 
@@ -33,7 +34,7 @@ usage() {
 
 main() {
   local opt OPTIND OPTARG
-  while getopts ':d:h' opt; do
+  while getopts ':d:qyh' opt; do
     case $opt in
     d) DEVICE="$OPTARG" ;;
     q) QUIET_MODE=true ;;
@@ -49,9 +50,11 @@ main() {
   check_device
   confirm_wipe
   spinner prepare_device
+  get_passphrase
   spinner partition_device || die 'Partitionning failed.'
+  get_partitions
   spinner format_root || die 'Formatting root partition failed.'
-  spinner subvol_creation || die 'Subvolumes creation failed.'
+  spinner create_subvolumes || die 'Subvolumes creation failed.'
   spinner format_efi || die 'Formatting efi partition failed.'
   spinner create_swapfile || die 'Failed creating a swap file.'
 }
