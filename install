@@ -1,0 +1,58 @@
+#!/bin/env bash
+
+QUIET_MODE=false
+NO_CONFIRM=false
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+MAPPER_DEV=/dev/mapper/cryptroot
+MNTP=/mnt
+EFI_MNTP=/mnt/efi
+SWAP_FILE_SIZE=4096
+SWAP_PATH=/mnt/swap/swapfile
+PASSPHRASE=
+
+[[ -f $SCRIPT_DIR/helpers ]] && . "$SCRIPT_DIR/helpers"
+
+if [[ -d $SCRIPT_DIR/modules ]]; then
+  for module in "$SCRIPT_DIR/modules"/*; do
+    [[ -f $module ]] && . "$module"
+  done
+fi
+
+usage() {
+  local prog=${0##*/}
+  cat <<-EOF
+	Usage: $prog -d <drive_name> [options]
+
+	eases the artix linux install by providing a one command install
+
+	Options
+	  -d <drive_name> specify the target drive for installation
+	  -h          print this help and exit
+	EOF
+}
+
+main() {
+  local opt OPTIND OPTARG
+  while getopts ':d:h' opt; do
+    case $opt in
+    d) DEVICE="$OPTARG" ;;
+    q) QUIET_MODE=true ;;
+    y) NO_CONFIRM=true ;;
+    h) usage ;;
+    *)
+      usage >&2
+      return 1
+      ;;
+    esac
+  done
+
+  check_device
+  prepare_device
+  $SCRIPT_DIR/bin/spinner partition_device || die 'Partitionning failed.'
+  $SCRIPT_DIR/bin/spinner format_root || die 'Formatting root partition failed.'
+  $SCRIPT_DIR/bin/spinner subvol_creation || die 'Subvolumes creation failed.'
+  $SCRIPT_DIR/bin/spinner format_efi || die 'Formatting efi partition failed.'
+  $SCRIPT_DIR/bin/spinner create_swapfile || die 'Failed creating a swap file.'
+}
+
+main "$@"

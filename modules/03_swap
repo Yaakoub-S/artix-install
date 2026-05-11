@@ -1,0 +1,11 @@
+#!/bin/env bash
+
+create_swapfile() (
+  set -e
+
+  info 'Creating swapfile.'
+
+  btrfs filesystem mkswapfile --size "$SWAP_FILE_SIZE"m --uuid clear "$SWAP_PATH" &>/dev/null
+
+  ok 'Swap file created.'
+)

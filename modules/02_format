@@ -1,0 +1,84 @@
+#!/bin/bash
+
+get_partitions() {
+  mapfile -ts 1 PARTITIONS < <(sfdisk "$DEVICE" -lqo Device)
+}
+
+set_passphrase() {
+  PASSPHRASE="$(get_passphrase)"
+}
+
+format_root() {
+  local root_part="${PARTITIONS[1]}"
+
+  (
+    set -e
+
+    info "Encrypting $root_part."
+    printf %s "$PASSPHRASE" | cryptsetup luksFormat "$root_part" --key-file - &>/dev/null
+    ok "$root_part is encrypted."
+
+    info "Opening $root_part"
+    printf %s "$PASSPHRASE" | cryptsetup luksOpen "$root_part" cryptroot --key-file - &>/dev/null
+    ok "$root_part is opened."
+
+    info "Formatting $MAPPER_DEV"
+    mkfs.btrfs -fq "$MAPPER_DEV" &>/dev/null
+    ok "$root_part is formated to btrfs."
+
+  )
+}
+
+subvolume_creation() {
+  local subvols=(@ @home @log @pkg @.snapshots @.swap)
+  local targets=('' /home /var/log /var/cache/pacman/pkg /.snapshots /.swap)
+  local i subvol target opts
+
+  (
+    set -e
+
+    info "Mounting $MAPPER_DEV."
+    mount "$MAPPER_DEV" "$MNTP" &>/dev/null
+    ok "$MAPPER_DEV is mounted."
+
+    info 'Creating subvolumes.'
+    for subvol in "${subvols[@]}"; do
+      btrfs su cr "$MNTP/$subvol" &>/dev/null
+    done
+    ok "Subvolumes created."
+
+    info "Unmounting $MAPPER_DEV."
+    umount "$MNTP" &>/dev/null
+    ok "$MAPPER_DEV unmounted."
+
+    info 'Remounting subvolumes.'
+    for i in "${!subvols[@]}"; do
+      subvol="${subvols[i]}"
+      target="$MNTP${targets[i]}"
+
+      opts='compress=zstd,noatime'
+      [[ $subvol == @.swap ]] && opts='noatime'
+
+      mkdir -p "$target" &>/dev/null
+      mount -o "subvol=$subvol,$opts" "$MAPPER_DEV" "$target" &>/dev/null
+    done
+    ok 'Subvolumes remounted.'
+  )
+}
+
+format_efi() {
+  local efi_part="${PARTITIONS[0]}"
+
+  (
+    set -e
+
+    info "Formatting the $efi_part."
+    mkdir -p "$EFI_MNTP" &>/dev/null
+    mkfs.fat -qfF 32 "$efi_part" &>/dev/null
+    ok "$efi_part is formated."
+
+    info "Mounting $efi_part."
+    mount "$efi_part" "$EFI_MNTP" &>/dev/null
+    ok "$efi_part is mounted."
+  )
+}

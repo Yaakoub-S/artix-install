@@ -1,0 +1,25 @@
+#!/bin/env bash
+
+SPINNER_PID=
+
+spinner() {
+  local chars=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
+  local c
+  while true; do
+    for c in "${chars[@]}"; do
+      printf ' %s \r' "$c"
+      sleep .2
+    done
+  done
+}
+
+cleanup() {
+  [[ -n $SPINNER_PID ]] && kill "$SPINNER_PID"
+}
+
+(($# == 0)) && exit 1
+
+trap cleanup EXIT
+spinner &
+SPINNER_PID=$!
+"$@"
