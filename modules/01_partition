@@ -4,7 +4,7 @@ check_device() {
   info 'Checking if selected device is valid.'
 
   [[ ! -b $DEVICE ]] && die 'Invalid block device.'
-  [[ -f "sys/class/block/$name/partition" ]] && \ 
+  [[ -f "/sys/class/block/$name/partition" ]] && \ 
   die 'You provided a partition. This tool can install only to full disks.'
 
   ok 'Device is valid.'
