@@ -48,12 +48,12 @@ main() {
 
   check_device
   confirm_wipe
-  $SCRIPT_DIR/bin/spinner prepare_device
-  $SCRIPT_DIR/bin/spinner partition_device || die 'Partitionning failed.'
-  $SCRIPT_DIR/bin/spinner format_root || die 'Formatting root partition failed.'
-  $SCRIPT_DIR/bin/spinner subvol_creation || die 'Subvolumes creation failed.'
-  $SCRIPT_DIR/bin/spinner format_efi || die 'Formatting efi partition failed.'
-  $SCRIPT_DIR/bin/spinner create_swapfile || die 'Failed creating a swap file.'
+  spinner prepare_device
+  spinner partition_device || die 'Partitionning failed.'
+  spinner format_root || die 'Formatting root partition failed.'
+  spinner subvol_creation || die 'Subvolumes creation failed.'
+  spinner format_efi || die 'Formatting efi partition failed.'
+  spinner create_swapfile || die 'Failed creating a swap file.'
 }
 
 main "$@"

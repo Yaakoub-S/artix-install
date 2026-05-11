@@ -12,9 +12,9 @@ check_device() {
 }
 
 confirm_wipe() {
-  printf "[ \033[0;41;37m?\033[m ]\033[0;41;37m"
-  printf 'ARE YOU ABSOLUTELY SURE YOU WANT TO PERMANENTLY ERASE ALL DATA ON $DEVICE?'
-  printf "\033[0m"
+  printf "\e[1;31m[ ? ]\e[0m\e[1m"
+  printf "ARE YOU SURE YOU WANT TO PERMANENTLY ERASE ALL DATA ON $DEVICE?"
+  printf "\e[0m"
 
   read -rp "Type 'YES' to confirm: " confirm
 

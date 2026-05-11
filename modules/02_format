@@ -2,12 +2,32 @@ get_partitions() {
   mapfile -ts 1 PARTITIONS < <(sfdisk "$DEVICE" -lqo Device)
 }
 
-set_passphrase() {
-  PASSPHRASE="$(get_passphrase)"
+get_passphrase() {
+  local pass1 pass2
+  local first_attempt=true
+
+  while true; do
+    if ! first_attempt; then
+      printf '\033[A\033[K\033[A\033[K\033[A\033[K'
+    fi
+
+    read -rs -p '[?] Enter LUKS passphrase: ' pass1
+    echo
+    read -rs -p '[?] Confirm passphrase: ' pass2
+    echo
+
+    first_attempt && first_attempt=false
+
+    [[ -z $pass1 || ${#pass1} -gt 512 || $pass1 != $pass2 ]] && continue
+
+    PASSPHRASE="$pass1"
+    break
+  done
 }
 
 format_root() {
   local root_part="${PARTITIONS[1]}"
+  PASSPHRASE="$(get_passphrase)"
 
   (
     set -e

@@ -31,25 +31,23 @@ die() {
   exit 1
 }
 
-get_passphrase() {
-  local pass1 pass2
-  local first_attempt=true
+spinner() {
+  (
+    while true; do
+      for c in '/' '-' '\' '|'; do
+        printf " %s \r" "$c"
+        sleep 0.1
+      done
+    done
+  ) &
+  local pid=$!
 
-  while true; do
-    if ! first_attempt; then
-      printf '\033[A\033[K\033[A\033[K\033[A\033[K'
-    fi
+  "$@"
+  local exit_code=$?
 
-    read -rs -p '[?] Enter LUKS passphrase: ' pass1
-    echo
-    read -rs -p '[?] Confirm passphrase: ' pass2
-    echo
+  kill "$pid" 2>/dev/null
+  wait "$pid" 2>/dev/null
+  printf "\r\033[K"
 
-    first_attempt && first_attempt=false
-
-    [[ -z $pass1 || ${#pass1} -gt 512 || $pass1 != $pass2 ]] && continue
-
-    printf '%s' "$pass1"
-    break
-  done
+  return $exit_code
 }
